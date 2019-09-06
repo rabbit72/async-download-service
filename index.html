@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -8,20 +8,33 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>Микросервис для скачивания файлов</title>
+    <title>Microservice for downloading files</title>
   </head>
   <body class="py-4">
     <div class="container">
-      <h1>Микросервис для скачивания файлов</h1>
-      <p class="lead">Это тестовая страница, она скрыта от пользователя.</p>
+      <h1>Microservice for downloading files</h1>
+      <p class="lead">This is test page, is is hided from the user.</p>
 
-      <p>Микросервис помогает работе основного сайта, сделанного на CMS и обслуживает
-      запросы на скачивание архивов с файлами. Микросервис не умеет ничего, кроме упаковки файлов
-      в архив. Закачиваются файлы на сервер через FTP или админку CMS.</p>
+      <p>
+          The microservice helps main site working. It maintains queries of downloading
+          archives of files. The microservice can not anything except packing files to
+          zip archives. New files are uploaded to the server through the admin panel or
+          FTP.
+      </p>
 
-      <p>Создание архива происходит на лету по запросу от пользователя. Архив не сохраняется на диске, вместо этого по мере упаковки он сразу отправляется пользователю на скачивание.</p>
+      <p>
+          Creating an archive is done on the fly at the request of a user.
+          The archive is not saved on the disk instead, as it is sent in parts to
+          the user to download.
+      </p>
 
-      <p>От неавторизованного доступа архив защищен хешом в адресе ссылки на скачивание, например: <code>http://host.ru/archive/3bea29ccabbbf64bdebcc055319c5745/</code>. Хеш задается названием каталога с файлами, выглядит структура каталога так:</p>
+      <p>
+          An archive is protected from unauthorized access by a hash in the address of
+          downloading link, for example:
+          <code>http://host.ru/archive/3bea29ccabbbf64bdebcc055319c5745/</code>.
+          Hash is specified by the name of the directory with the files. The structure
+          of catalogue looks like:
+      </p>
 
       <code><pre>
         - photos
@@ -34,15 +47,17 @@
               - 2.jpg
       </pre></code>
 
-      <h2 class="mt-5 mb-3">Ссылки для тестирования</h2>
+      <h2 class="mt-5 mb-3">Links for testing</h2>
 
       <div class="row">
         <div class="col-3">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Архив #1</h5>
-              <p class="card-text">Хеш архива <code>7kna</code>.</p>
-              <a href="/archive/7kna/" target="_blank" class="btn btn-primary">Скачать</a>
+              <h5 class="card-title">Archive #1</h5>
+              <p class="card-text">Archive hash <code>7kna</code>.</p>
+              <a href="/archive/7kna/" target="_blank" class="btn btn-primary">
+                  Download
+              </a>
             </div>
           </div>          
         </div>
@@ -50,9 +65,11 @@
         <div class="col-3">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Архив #2</h5>
-              <p class="card-text">Хеш архива <code>rur2</code>.</p>
-              <a href="/archive/rur2/" target="_blank" class="btn btn-primary">Скачать</a>
+              <h5 class="card-title">Archive #2</h5>
+              <p class="card-text">Archive hash <code>rur2</code>.</p>
+              <a href="/archive/rur2/" target="_blank" class="btn btn-primary">
+                  Download
+              </a>
             </div>
           </div>          
         </div>

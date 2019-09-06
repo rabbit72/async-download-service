@@ -1,12 +1,19 @@
-# Микросервис для скачивания файлов
+# Microservice for downloading files
+The microservice helps main site working. It maintains queries of downloading
+archives of files. The microservice can not anything except packing files to
+zip archives.
+New files are uploaded to the server through the admin panel or FTP.
 
-Микросервис помогает работе основного сайта, сделанного на CMS и обслуживает
-запросы на скачивание архивов с файлами. Микросервис не умеет ничего, кроме упаковки файлов
-в архив. Закачиваются файлы на сервер через FTP или админку CMS.
+Creating an archive is done on the fly at the request of a user.
+The archive is not saved on the disk instead, as it is sent in parts to
+the user to download. 
 
-Создание архива происходит на лету по запросу от пользователя. Архив не сохраняется на диске, вместо этого по мере упаковки он сразу отправляется пользователю на скачивание.
+An archive is protected from unauthorized access by a hash in the address of 
+downloading link, for example:
+`http://host.ru/archive/3bea29ccabbbf64bdebcc055319c5745/`.
 
-От неавторизованного доступа архив защищен хешом в адресе ссылки на скачивание, например: `http://host.ru/archive/3bea29ccabbbf64bdebcc055319c5745/`. Хеш задается названием каталога с файлами, выглядит структура каталога так:
+Hash is specified by the name of the directory with the files.
+The structure of catalogue looks like:
 
 ```
 - photos
@@ -20,35 +27,41 @@
 ```
 
 
-## Как установить
-
-Для работы микросервиса нужен Python версии не ниже 3.6.
+## How to install
+The project requires Python 3.7+
 
 ```bash
 pip install -r requirements.txt
 ```
+or
+```bash
+pipenv install
+```
 
-## Как запустить
+## How to run
+```bash
+python server.py
+```
+or
+```bash
+pipenv run python server.py
+```
+Server runs on 8080 port.
+Go to the page [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
+
+## How to deploy on server
 
 ```bash
 python server.py
 ```
-
-Сервер запустится на порту 8080, чтобы проверить его работу перейдите в браузере на страницу [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
-
-## Как развернуть на сервере
-
-```bash
-python server.py
-```
-
-После этого перенаправить на микросервис запросы, начинающиеся с `/archive/`. Например:
+After that, redirect requests starting with `/archive/`.
+Example:
 
 ```
 GET http://host.ru/archive/3bea29ccabbbf64bdebcc055319c5745/
 GET http://host.ru/archive/af1ad8c76fda2e48ea9aed2937e972ea/
 ```
 
-# Цели проекта
-
-Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org).
+# The project goals
+This code was written for learning purpose - Python web-development course
+[Devman](https://dvmn.org).
