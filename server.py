@@ -19,23 +19,45 @@ async def handle_index_page(request):
     return web.Response(text=index_contents, content_type="text/html")
 
 
+async def get_archive_stream(photos_dir: Path, allowed_ext: str):
+    get_files_command = f"cd {photos_dir} && ls $PWD/*.{allowed_ext}"
+    get_zip_command = ("zip", "-j", "-@", "-")
+    filenames_read, filenames_write = os.pipe()
+    dev_null = await aiofiles.open(os.devnull, "w")
+
+    try:
+        await asyncio.create_subprocess_shell(
+            get_files_command, stdout=filenames_write, stderr=dev_null
+        )
+        os.close(filenames_write)
+        archive_stream = await asyncio.create_subprocess_exec(
+            *get_zip_command, stdin=filenames_read, stdout=PIPE, stderr=dev_null
+        )
+    finally:
+        os.close(filenames_read)
+        dev_null.close()
+    return archive_stream
+
+
 async def stream_archive(
     photos_dir: Path, response: web.StreamResponse, allowed_ext: str = "jpg"
-):
-    unix_pipe = f"cd {photos_dir} && ls *.{allowed_ext} | zip -@ -"
-    async with aiofiles.open(os.devnull, "w") as dev_null:
-        archive_chunk = await asyncio.create_subprocess_shell(
-            unix_pipe, stdout=PIPE, stderr=dev_null
-        )
+) -> None:
     chunk_number = 1
     chunk_size = 10 * 1024  # 10 KB
-    while True:
-        zip_chunk = await archive_chunk.stdout.read(chunk_size)
-        if not zip_chunk:
-            break
-        logging.debug(f"Sending archive chunk {chunk_number} for {photos_dir}")
-        await response.write(zip_chunk)
-        chunk_number += 1
+    archive_stream = await get_archive_stream(photos_dir, allowed_ext)
+    try:
+        while True:
+            zip_chunk = await archive_stream.stdout.read(chunk_size)
+            if not zip_chunk:
+                break
+            logging.debug(f"Sending archive chunk {chunk_number} for {photos_dir}")
+            # await asyncio.sleep(1)
+            await response.write(zip_chunk)
+            chunk_number += 1
+    except asyncio.CancelledError:
+        logging.warning("Download was interrupted.")
+        archive_stream.kill()
+        raise
 
 
 @routes.get("/archive/{archive_hash}/")
@@ -53,7 +75,11 @@ async def archive(request):
     response.headers["Content-Disposition"] = content_disposition
     # send HTTP headers before response streaming
     await response.prepare(request)
-    await stream_archive(photos_dir, response)
+
+    try:
+        await stream_archive(photos_dir, response)
+    finally:
+        response.force_close()
     return response
 
 
