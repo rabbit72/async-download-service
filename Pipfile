@@ -9,6 +9,7 @@ isort = "*"
 [packages]
 aiofiles = "*"
 aiohttp = "*"
+click = "*"
 
 [requires]
 python_version = "3.7"
