@@ -18,6 +18,29 @@ async def handle_index_page(request):
     return web.Response(text=index_contents, content_type="text/html")
 
 
+@routes.get("/archive/{archive_hash}/")
+async def archive(request):
+    archive_hash = request.match_info.get("archive_hash")
+    root_photo_dir = Path(os.environ["ROOT_PHOTO_DIR"]).resolve()
+    photos_dir = root_photo_dir / archive_hash
+    if not photos_dir.exists():
+        raise web.HTTPNotFound(text=f"The archive {archive_hash}.zip does not exist")
+
+    response = web.StreamResponse()
+    content_type = "application/zip"
+    content_disposition = f'attachment; filename="{archive_hash}.zip"'
+    response.headers["Content-Type"] = content_type
+    response.headers["Content-Disposition"] = content_disposition
+    # send HTTP headers before response streaming
+    await response.prepare(request)
+
+    try:
+        await stream_archive(photos_dir, response)
+    finally:
+        response.force_close()
+    return response
+
+
 async def stream_archive(photos_dir: Path, response: web.StreamResponse) -> None:
     delay = float(os.environ.get("DELAY", 0))
     chunk_size = int(os.environ["CHUNKSIZE"]) * 1024
@@ -43,29 +66,6 @@ async def stream_archive(photos_dir: Path, response: web.StreamResponse) -> None
         archive_stream.kill()
         await archive_stream.communicate()
         raise
-
-
-@routes.get("/archive/{archive_hash}/")
-async def archive(request):
-    archive_hash = request.match_info.get("archive_hash")
-    root_photo_dir = Path(os.environ["ROOT_PHOTO_DIR"]).resolve()
-    photos_dir = root_photo_dir / archive_hash
-    if not photos_dir.exists():
-        raise web.HTTPNotFound(text=f"The archive {archive_hash}.zip does not exist")
-
-    response = web.StreamResponse()
-    content_type = "application/zip"
-    content_disposition = f'attachment; filename="{archive_hash}.zip"'
-    response.headers["Content-Type"] = content_type
-    response.headers["Content-Disposition"] = content_disposition
-    # send HTTP headers before response streaming
-    await response.prepare(request)
-
-    try:
-        await stream_archive(photos_dir, response)
-    finally:
-        response.force_close()
-    return response
 
 
 def set_logging(log_level: str):
