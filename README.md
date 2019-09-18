@@ -49,6 +49,13 @@ pipenv run python server.py
 Server runs on 8080 port.
 Go to the page [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
 
+
+### Docker
+Also you can use docker-compose. Run command below in root directory.
+```bash
+docker-compose up
+```
+
 ## How to deploy on server
 
 ```bash
