@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 from asyncio.subprocess import PIPE
 from pathlib import Path
 
@@ -19,32 +18,14 @@ async def handle_index_page(request):
     return web.Response(text=index_contents, content_type="text/html")
 
 
-async def get_archive_stream(photos_dir: Path, allowed_ext: str):
-    get_files_command = f"cd {photos_dir} && ls $PWD/*.{allowed_ext}"
-    get_zip_command = ("zip", "-j", "-@", "-")
-    filenames_read, filenames_write = os.pipe()
-    dev_null = await aiofiles.open(os.devnull, "w")
+async def stream_archive(photos_dir: Path, response: web.StreamResponse) -> None:
 
-    try:
-        await asyncio.create_subprocess_shell(
-            get_files_command, stdout=filenames_write, stderr=dev_null
-        )
-        os.close(filenames_write)
-        archive_stream = await asyncio.create_subprocess_exec(
-            *get_zip_command, stdin=filenames_read, stdout=PIPE, stderr=dev_null
-        )
-    finally:
-        os.close(filenames_read)
-        dev_null.close()
-    return archive_stream
-
-
-async def stream_archive(
-    photos_dir: Path, response: web.StreamResponse, allowed_ext: str = "jpg"
-) -> None:
+    zip_command = ("zip", "-jr", "-", f"{photos_dir}")
     chunk_number = 1
     chunk_size = 10 * 1024  # 10 KB
-    archive_stream = await get_archive_stream(photos_dir, allowed_ext)
+    archive_stream = await asyncio.create_subprocess_exec(
+        *zip_command, stdout=PIPE, stderr=PIPE
+    )
     try:
         while True:
             zip_chunk = await archive_stream.stdout.read(chunk_size)
@@ -57,6 +38,7 @@ async def stream_archive(
     except asyncio.CancelledError:
         logging.warning("Download was interrupted.")
         archive_stream.kill()
+        await archive_stream.communicate()
         raise
 
 
